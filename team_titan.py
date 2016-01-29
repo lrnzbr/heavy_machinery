@@ -26,6 +26,11 @@ def make_dummies(df):
 	   dummies_i = pd.get_dummies(df[names])
 	   df = pd.concat([df, dummies_i], axis=1)
 
+def data_frame_subset(df, num_rows):
+    row_selected = list(np.random.randint(0, df.shape[0],  num_rows))
+    sub_set = df.loc[row_selected]
+    return sub_set
+
 
 if __name__ == '__main__':
 
