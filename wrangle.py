@@ -25,28 +25,46 @@ if __name__ == '__main__':
 	df = pd.read_csv('../data/Train.csv', dtype=dtype_dict)
 	y = df['SalePrice'].values
 
-	first_drop = [	'SalesID', 'MachineID', 'ProductGroupDesc', 'datasource',
-					'fiModelDesc', 'fiSecondaryDesc', 'fiModelSeries', 'fiBaseModel',
-					'fiModelDescriptor', 'fiProductClassDesc', 'ModelID', 'SalePrice'
-					]
+    first_drop = [  'SalesID', 'MachineID', 'ProductGroupDesc', 'datasource',
+                    'fiModelDesc', 'fiSecondaryDesc', 'fiModelSeries', 'fiBaseModel',
+                    'fiModelDescriptor', 'fiProductClassDesc', 'ModelID', 'SalePrice',
+                    'state','Drive_System', 'Forks',  'Ride_Control', 'Stick', 'Transmission',
+                    'Turbocharged', 'Blade_Extension', 'Blade_Width', 'Enclosure_Type',
+                    'Engine_Horsepower', 'Hydraulics', 'Pushblock', 'Ripper',
+                    'Scarifier', 'Tip_Control', 'Tire_Size', 'Coupler', 'UsageBand',
+                    'Coupler_System', 'Grouser_Tracks', 'Hydraulics_Flow', 'Track_Type',
+                    'Undercarriage_Pad_Width', 'Stick_Length', 'Thumb',
+                    'Pattern_Changer', 'Grouser_Type', 'Backhoe_Mounting',
+                    'Travel_Controls', 'Differential_Type', 'Steering_Controls', 'auctioneerID'
+        ]
 	drop_columns(df, first_drop)
 
 	stanardize_YearMade(df)
 	strip_saledate(df)
-	col_dummies = ['ProductSize', 'state', 'ProductGroup', 'Drive_System', 'Enclosure',
-				   'Forks', 'Pad_Type', 'Ride_Control', 'Stick', 'Transmission',
-				   'Turbocharged', 'Blade_Extension', 'Blade_Width', 'Enclosure_Type',
-				   'Engine_Horsepower', 'Hydraulics', 'Pushblock', 'Ripper',
-				   'Scarifier', 'Tip_Control', 'Tire_Size', 'Coupler', 'UsageBand',
-				   'Coupler_System', 'Grouser_Tracks', 'Hydraulics_Flow', 'Track_Type',
-				   'Undercarriage_Pad_Width', 'Stick_Length', 'Thumb',
-				   'Pattern_Changer', 'Grouser_Type', 'Backhoe_Mounting', 'Blade_Type',
-				   'Travel_Controls', 'Differential_Type', 'Steering_Controls', 'auctioneerID'
-				   ]
+	col_dummies = ['ProductSize', 'Enclosure', 'ProductGroup', 'Pad_Type', 'Blade_Type']
+
 	clean_df = make_dummies(df, col_dummies)
 
 	mean_hour_median = clean_df['MachineHoursCurrentMeter'].mean()
 	clean_df['MachineHoursCurrentMeter'] = clean_df['MachineHoursCurrentMeter'].fillna(mean_hour_median)
 
 	X = clean_df.values
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
