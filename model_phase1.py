@@ -33,14 +33,19 @@ def create(y_predict):
     y_dataframe = pd.dataframe(y_predict)
     y_dataframe.to_csv()
 
-def feature_importance(model):
+def feature_importance(model, threshold=0.05):
     feature = model.feature_importance
-    np.arg_sort(feature)
-    
+    indx = np.arg_sort(feature)[::-1]
+    feature_norm = feature[indx]/feature[indx[0]]
+    return indx[feature_norm>=threshold]
+
 if __name__=="__main__":
 
     params = {'n_estimators': 500,
                 'max_feature': 30}
     rf = RandomForestRegressor()
-    pipeline(rf, X, y)
+    pipeline(rf, X, y, n_subset=1000)
+    feature_importance(rf)
+    #array([ 74,   0,   2,  64,   7,  63,  81,   6,   4,  62,   5,   1, 232])
+
     #y_test = rf.predict(X_test)
