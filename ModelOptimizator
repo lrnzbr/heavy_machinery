@@ -1,0 +1,152 @@
+from sklearn.ensemble import RandomForestRegressor
+import pandas as pd
+import numpy as np
+from sklearn.cross_validation import cross_val_score
+from sklearn.cross_validation import train_test_split
+from sklearn.grid_search import GridSearchCV
+from sklearn.cross_validation import KFold
+
+class ModelOptimizator(object):
+    def __init__(self, model, n_subset = 2000, parameters=None, grid_params={}):
+        self.model = model
+        self.idx_important_features = []
+        self.parameters = parameters
+        self.grid_params = {}
+        self.best_params_= {}
+        self.n_subset = 2000
+        self.best_model = None
+
+    def fit_model(self, X, y):
+        '''
+        Args:
+            model: Machine learning model
+            X: Features
+            y: result
+            params: model parameters
+        Return:
+            None
+        Output:
+            model fitted on using X and y
+        '''
+        if self.parameters!=None:
+            self.model.set_params(**self.parameters)
+        self.model.fit(X,y)
+
+    def evaluation(self, y_predict, y_target):
+        return np.sqrt(np.mean((np.log(y_predict+1)-np.log(y_target+1))**2))
+
+    def data_frame_subset(self, X, y):
+        '''
+        Args:
+            X: Data set
+            y: result
+            n_subset: Size subset
+        '''
+        row_selected = list(np.random.randint(0, X.shape[0], self.n_subset))
+        X_sub_set = X[row_selected, :]
+        y_sub_set = y[row_selected]
+        return X_sub_set, y_sub_set
+
+
+    def scoring(self, X, y):
+        '''
+        Args:
+            model: Machine Learning Model
+            X: test set
+            y: test set
+        return:
+            score of the model
+        '''
+        kf = KFold(X.shape[1],5)
+        error = []
+        for train_idx, test_idx in kf:
+            self.model.fit(X[train_idx,:], y[train_idx])
+            y_predict = self.model.predict(X[test_idx,:])
+            error = evaluation(y_predict, y[test_idx])
+        return np.mean(error)
+
+    def feature_importance(self, threshold=0.05):
+        '''
+        Args:
+            model: Machine learning model
+            threshold: Is the threshold for the selection of the best features
+        return:
+            indeces of the best selected features
+        '''
+        feature = self.model.feature_importances_
+        indx = np.argsort(feature)[::-1]
+        feature_norm = feature[indx]/feature[indx[0]]
+        self.idx_important_features = indx[feature_norm>=threshold]
+
+
+    def new_grid_params(self):
+        '''
+        Input:
+            best_params_: model best parameters from grid search
+            grid_params: Old grid parameters of grid search
+        return:
+            new_grid_parms: The new grid parameters for grid search
+        '''
+        for k, v in self.best_params_.items():
+            idx = self.grid_params[k].indx(v)
+            if idx==0:
+                new_grid_parms={k: range(v/2,v, int((v-float(v/2))/float(5)))}
+            elif idx==len(grid_params[k]):
+                new_grid_params = {k: range(v, v*2, int((v*2-v)/float(5)))}
+            else:
+                high = gri_params[k][idx+1]
+                low = grid_params[k][idx-1]
+                new_grid_params = {k: range(low ,high , int((high-low)/float(5)))}
+        self.grid_params = new_grid_params
+
+    def grid_optimizator(self, X, y, n_iter):
+        '''
+        Args:
+            model: Machine learning model
+            X: X parameters
+            y: y result
+            grid_params: grid params for grid search
+            n_iter: number of iterations
+        Return:
+            best_model: Best model found
+        '''
+        i = 0
+        while i < n_iter:
+            grid_search = GridSearchCV(self.model, self.grid_params)
+            grid_search.scoring='accuracy'
+            _x, _y = self.data_frame_subset(X, y)
+            grid_search.fit(_x, _y)
+            self.best_params_ = grid_search.best_params_
+            self.new_grid_params()
+            i+=1
+        self.best_model = self.grid_search.best_estimator_
+        return best_model
+
+def create_csv(df_test, predictins):
+    result = pd.DataFrame(df_test['SalesID'])
+    result['SalePrice'] = pd.Series(y_predict)
+    result.to_csv('data/your_predictions.csv', index=False)
+
+
+# if __name__=="__main__":
+    model_opt.grid_params = {'n_estimators' : range(10,500,int((500-10)/float(5))),
+                            'max_features' : range(1,10, int((10-1)/float(5))),
+                            'max_depth' : range(1,10, int((10-1)/float(5)))}
+    model_opt.grid_optimizator(X,y,5)
+    # min_samples_split
+    # min_samples_leaf
+    # min_weight_fraction_leaf
+    # max_leaf_nodes
+    #
+    #
+
+#     rf, score, idx_feature = pipeline_phase2(rf, X, y, n_subset=5000, parameters=params ,threshold=0.20)
+#     # pipeline_phase1(rf, X[:,idx_feature], y, n_subset=2000)
+#     # best_model = pipeline_phase3(model, X, y, grid_params, n_iter)
+#     # y = best_model.predict(X_test)
+#     predictions = pd.read_csv(infile)
+#     predictions.set_index('SalesID')
+#     test_solution = pd.read_csv('data/do_not_open/test_soln.csv')
+#     test_solution.set_index('SalesID')
+#     b = Comparer(test_solution.SalePrice)
+#     b.report_to_slack(y_predict)
